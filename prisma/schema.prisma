@@ -1,0 +1,31 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Generation {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Input
+  prompt    String
+  mode      String   @default("image") // "image" or "video" (MVP: fixed to "image")
+  model     String   // kie.ai model name
+
+  // Job tracking
+  status    String   @default("pending") // pending, processing, completed, failed
+  jobId     String?  @unique // BullMQ job ID
+  kieJobId  String?  @unique // kie.ai generation ID
+
+  // Output
+  resultUrl String?
+  errorMessage String?
+
+  @@index([status])
+  @@index([createdAt])
+}
