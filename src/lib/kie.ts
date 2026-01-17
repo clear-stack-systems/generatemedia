@@ -28,16 +28,20 @@ export async function submitKieGeneration(
 
   const webhookUrl = request.webhookUrl || `${process.env.GENERATEMEDIA_PUBLIC_BASE_URL}/api/webhook`;
 
-  const response = await fetch(`${KIE_API_BASE_URL}/generate`, {
+  const response = await fetch(`${KIE_API_BASE_URL}/jobs/createTask`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${KIE_API_KEY}`,
     },
     body: JSON.stringify({
-      prompt: request.prompt,
       model: request.model,
-      webhook_url: webhookUrl,
+      callBackUrl: webhookUrl,
+      input: {
+        prompt: request.prompt,
+        aspect_ratio: '1:1',
+        quality: 'basic',
+      },
     }),
   });
 
@@ -46,13 +50,18 @@ export async function submitKieGeneration(
     throw new Error(`kie.ai API error: ${response.status} ${errorText}`);
   }
 
-  const data = await response.json();
+  const responseData = await response.json();
+
+  // kie.ai returns { code: 200, message: "success", data: { taskId: "..." } }
+  if (responseData.code !== 200 || !responseData.data?.taskId) {
+    throw new Error(`kie.ai API error: Invalid response format - ${JSON.stringify(responseData)}`);
+  }
 
   return {
-    id: data.id,
-    status: data.status || 'pending',
-    resultUrl: data.result_url,
-    error: data.error,
+    id: responseData.data.taskId,
+    status: 'pending', // Initial status is always pending
+    resultUrl: undefined,
+    error: undefined,
   };
 }
 
