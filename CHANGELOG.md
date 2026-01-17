@@ -7,12 +7,43 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **Video Generation Support** (2026-01-17)
+  - Added video generation mode using kie.ai Seedance 1.5 Pro model
+  - Mode selector UI (Image/Video tabs)
+  - Image upload functionality for video generation (0-2 input images)
+  - Video parameter controls:
+    - Aspect ratio: 1:1, 16:9, 9:16, 4:3, 3:4
+    - Resolution: 480p, 720p
+    - Duration: 4, 8, or 12 seconds
+    - Fixed lens option (static camera)
+    - Generate audio option
+  - Drag & drop file upload with preview thumbnails
+  - File serving endpoint for uploaded images
+  - Video playback in results table
+
+- **Backend Enhancements**
+  - Database schema updated with video parameters (aspectRatio, resolution, duration, fixedLens, generateAudio, inputImageUrls)
+  - Dynamic API input building based on mode (image vs video)
+  - File upload API with validation (JPEG, PNG, WebP, max 10MB)
+  - Sharp library for image validation
+  - Persistent local storage at `/srv/apps/generatemedia/uploads`
+
+- **Infrastructure**
+  - Docker volume mount for uploads directory
+  - Environment variables for separate image/video models
+  - Updated Prisma schema with migration
+
+### Changed
+- Updated UI to support both image and video generation
+- Generation table now displays mode column
+- Conditional rendering of parameters based on selected mode
+
 ### Planned
-- Model selector UI
-- Aspect ratio picker
-- Quality toggle (basic/high)
 - User authentication
-- Download button for generated images
+- Download button for generated images/videos
+- Additional video models
+- Batch generation support
 
 ## [0.1.0] - 2026-01-17
 

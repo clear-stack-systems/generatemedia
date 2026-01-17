@@ -4,9 +4,20 @@ import { prisma } from './lib/prisma';
 import { submitKieGeneration } from './lib/kie';
 
 async function processGeneration(job: Job<GenerationJobData>) {
-  const { generationId, prompt, model } = job.data;
+  const {
+    generationId,
+    prompt,
+    model,
+    mode,
+    inputImageUrls,
+    aspectRatio,
+    resolution,
+    duration,
+    fixedLens,
+    generateAudio,
+  } = job.data;
 
-  console.log(`[Worker] Processing generation ${generationId}...`);
+  console.log(`[Worker] Processing ${mode} generation ${generationId}...`);
 
   try {
     // Update status to processing
@@ -15,10 +26,17 @@ async function processGeneration(job: Job<GenerationJobData>) {
       data: { status: 'processing' },
     });
 
-    // Submit to kie.ai
+    // Submit to kie.ai with all parameters
     const kieResponse = await submitKieGeneration({
       prompt,
       model,
+      mode,
+      inputImageUrls,
+      aspectRatio,
+      resolution,
+      duration,
+      fixedLens,
+      generateAudio,
     });
 
     console.log(`[Worker] kie.ai job created: ${kieResponse.id}`);

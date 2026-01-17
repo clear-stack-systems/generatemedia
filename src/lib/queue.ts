@@ -9,6 +9,14 @@ export type GenerationJobData = {
   generationId: string;
   prompt: string;
   model: string;
+  mode: 'image' | 'video';
+  // Video-specific parameters
+  inputImageUrls?: string[];
+  aspectRatio?: string;
+  resolution?: string;
+  duration?: number;
+  fixedLens?: boolean;
+  generateAudio?: boolean;
 };
 
 export const generationQueue = new Queue<GenerationJobData>('generation', {

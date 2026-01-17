@@ -6,7 +6,15 @@ const KIE_API_BASE_URL = process.env.KIE_API_BASE_URL || 'https://api.kie.ai/v1'
 export type KieGenerationRequest = {
   prompt: string;
   model: string;
+  mode: 'image' | 'video';
   webhookUrl?: string;
+  // Video-specific parameters
+  inputImageUrls?: string[];
+  aspectRatio?: string;
+  resolution?: string;
+  duration?: number;
+  fixedLens?: boolean;
+  generateAudio?: boolean;
 };
 
 export type KieGenerationResponse = {
@@ -28,21 +36,61 @@ export async function submitKieGeneration(
 
   const webhookUrl = request.webhookUrl || `${process.env.GENERATEMEDIA_PUBLIC_BASE_URL}/api/webhook`;
 
+  // Build input based on mode
+  let input: any;
+
+  if (request.mode === 'video') {
+    // Video mode: use video-specific parameters
+    input = {
+      prompt: request.prompt,
+    };
+
+    // Add optional video parameters
+    if (request.inputImageUrls && request.inputImageUrls.length > 0) {
+      input.input_urls = request.inputImageUrls;
+    }
+    if (request.aspectRatio) {
+      input.aspect_ratio = request.aspectRatio;
+    }
+    if (request.resolution) {
+      input.resolution = request.resolution;
+    }
+    if (request.duration !== undefined) {
+      input.duration = String(request.duration);
+    }
+    if (request.fixedLens !== undefined) {
+      input.fixed_lens = request.fixedLens;
+    }
+    if (request.generateAudio !== undefined) {
+      input.generate_audio = request.generateAudio;
+    }
+  } else {
+    // Image mode: use image-specific parameters
+    input = {
+      prompt: request.prompt,
+      aspect_ratio: request.aspectRatio || '1:1',
+      quality: 'basic',
+    };
+  }
+
+  const requestBody = {
+    model: request.model,
+    callBackUrl: webhookUrl,
+    input,
+  };
+
+  // Debug: log to console
+  console.log('\n=== kie.ai REQUEST ===');
+  console.log(JSON.stringify(requestBody, null, 2));
+  console.log('======================\n');
+
   const response = await fetch(`${KIE_API_BASE_URL}/jobs/createTask`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${KIE_API_KEY}`,
     },
-    body: JSON.stringify({
-      model: request.model,
-      callBackUrl: webhookUrl,
-      input: {
-        prompt: request.prompt,
-        aspect_ratio: '1:1',
-        quality: 'basic',
-      },
-    }),
+    body: JSON.stringify(requestBody),
   });
 
   if (!response.ok) {
