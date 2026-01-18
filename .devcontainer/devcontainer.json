@@ -1,0 +1,42 @@
+{
+  "name": "generatemedia",
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "app",
+  "workspaceFolder": "/workspace",
+
+  "features": {
+    "ghcr.io/devcontainers/features/git:1": {}
+  },
+
+  "forwardPorts": [3000, 5555, 5432, 6379],
+  "portsAttributes": {
+    "3000": { "label": "Next.js Dev", "onAutoForward": "notify" },
+    "5555": { "label": "Prisma Studio", "onAutoForward": "silent" },
+    "5432": { "label": "PostgreSQL", "onAutoForward": "silent" },
+    "6379": { "label": "Redis", "onAutoForward": "silent" }
+  },
+
+  "postCreateCommand": "npm install && npx prisma generate && npx prisma migrate dev",
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "bradlc.vscode-tailwindcss",
+        "Prisma.prisma",
+        "ms-vscode.vscode-typescript-next"
+      ],
+      "settings": {
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "typescript.tsdk": "node_modules/typescript/lib"
+      }
+    }
+  },
+
+  "remoteEnv": {
+    "DATABASE_URL": "postgresql://postgres:postgres@db:5432/generatemedia",
+    "REDIS_URL": "redis://redis:6379"
+  }
+}
